@@ -1,25 +1,19 @@
 name: "VaultOps - Secret Validation"
-description: "Validates app metadata and environment-specific vaultops configuration"
+description: "Validates app metadata and environment-specific VaultOps configuration"
 
 inputs:
   environment:
-    description: "Environment (dev/prod)"
+    description: "Deployment environment (e.g., dev, prod)"
     required: true
 
   metadata_file:
-    description: "App metadata YAML (under coreops/metadata/)"
-    required: false
-    default: "tars.yaml"
+    description: "Path to the app metadata YAML file"
+    required: true
 
   vaultops_file:
-    description: "VaultOps YAML file (under coreops/<env>/)"
+    description: "Path to the VaultOps YAML file"
     required: false
     default: "vaultops.yaml"
-
-  nomadops_file:
-    description: "NomadOps YAML file (under coreops/<env>/)"
-    required: false
-    default: ""
 
 runs:
   using: "composite"
@@ -30,14 +24,17 @@ runs:
         python-version: '3.10'
 
     - name: Install Python dependencies
+      shell: bash
       run: |
         pip install pyyaml jsonschema
-      shell: bash
+
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
     - name: Run secret onboarding validation
+      shell: bash
       run: |
-        python .github/vaultops/scripts/secret_onboarding.py \
+        python ${{ github.action_path }}/scripts/secret_onboarding.py \
           coreops/${{ inputs.environment }} \
           ${{ inputs.metadata_file }} \
-          ${{ inputs.vaultops_file }} \
-      shell: bash
+          ${{ inputs.vaultops_file }}
