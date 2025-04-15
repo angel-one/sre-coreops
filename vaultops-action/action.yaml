@@ -36,7 +36,7 @@ runs:
 
     - name: Run secret onboarding validation
       run: |
-        python .github/actions/vaultops/scripts/secret_onboarding.py \
+        python .github/vaultops/scripts/secret_onboarding.py \
           coreops/${{ inputs.environment }} \
           ${{ inputs.metadata_file }} \
           ${{ inputs.vaultops_file }} \
