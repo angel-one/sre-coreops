@@ -1,37 +1,56 @@
 import os
 import sys
-import json
 import yaml
+import json
 import jsonschema
-from jsonschema import validate
 
-SCHEMA_FILE = ".github/actions/vaultops/schema/onboarding.schema.json"
-
-def load_yaml(directory, filename):
-    path = os.path.join(directory, filename)
-    with open(path, "r") as f:
+def load_yaml(path, name):
+    full_path = os.path.join(path, name)
+    if not os.path.isfile(full_path):
+        print(f"❌ File not found: {full_path}")
+        sys.exit(1)
+    with open(full_path, "r") as f:
         return yaml.safe_load(f)
 
-def load_schema():
-    with open(SCHEMA_FILE, "r") as f:
-        return json.load(f)
-
-def validate_yaml(data, schema):
+def validate_schema(data, schema_path, label):
+    with open(schema_path, "r") as f:
+        schema = json.load(f)
     try:
-        validate(instance=data, schema=schema)
-        print("✅ YAML schema validation passed.")
+        jsonschema.validate(instance=data, schema=schema)
+        print(f"✅ {label} validation passed.")
     except jsonschema.exceptions.ValidationError as e:
-        print("❌ YAML schema validation failed:")
-        print(e.message)
+        print(f"❌ {label} validation failed:\n{e.message}")
         sys.exit(1)
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("Usage: python secret_onboarding.py <directory> <filename>")
+    if len(sys.argv) < 4:
+        print("Usage: python secret_onboarding.py <env_dir> <metadata_file> <vaultops_file?> <nomadops_file?>")
         sys.exit(1)
 
-    directory, filename = sys.argv[1], sys.argv[2]
+    env_dir        = sys.argv[1]
+    metadata_file  = sys.argv[2]
+    vaultops_file  = sys.argv[3]
+    nomadops_file  = sys.argv[4] if len(sys.argv) > 4 else ""
 
-    yaml_data = load_yaml(directory, filename)
-    schema = load_schema()
-    validate_yaml(yaml_data, schema)
+    # Validate metadata
+    metadata_path = os.path.join("coreops", "metadata")
+    metadata = load_yaml(metadata_path, metadata_file)
+    validate_schema(metadata, ".github/schemas/metadata.schema.json", "Metadata")
+
+    # Validate vaultops if present
+    if vaultops_file:
+        vaultops = load_yaml(env_dir, vaultops_file)
+        merged_vault = {
+            "app": metadata,
+            **vaultops
+        }
+        validate_schema(merged_vault, ".github/schemas/vaultops.schema.json", "VaultOps")
+
+    # Validate nomadops if present
+    if nomadops_file:
+        nomadops = load_yaml(env_dir, nomadops_file)
+        merged_nomad = {
+            "app": metadata,
+            **nomadops
+        }
+        validate_schema(merged_nomad, ".github/schemas/nomadops.schema.json", "NomadOps")
