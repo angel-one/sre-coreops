@@ -1,0 +1,39 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Application Metadata Schema",
+    "type": "object",
+    "required": ["appid", "name", "owner"],
+    "properties": {
+      "appid": {
+        "type": "string",
+        "format": "uuid",
+        "description": "Globally unique application ID used for AppRole and secret mappings."
+      },
+      "name": {
+        "type": "string",
+        "description": "Logical name of the application."
+      },
+      "team": {
+        "type": "string",
+        "description": "Owning team or group name."
+      },
+      "owner": {
+        "type": "string",
+        "format": "email",
+        "description": "Primary contact email for the app or team."
+      },
+      "jira_project": {
+        "type": "string",
+        "description": "Associated JIRA project key for tracking work or issues."
+      },
+      "tags": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "Optional list of classification tags (e.g., pci, pii, internal)."
+      }
+    },
+    "additionalProperties": false
+  }
+  

@@ -1,0 +1,29 @@
+# action.yaml inside sre-infra-coreops/.github/actions/vaultops
+
+name: "VaultOps - Secret Pipeline"
+description: "Validates and renders Vault policies from app onboarding YAMLs"
+
+inputs:
+  directory:
+    required: true
+    description: "Path to the environment folder"
+  file:
+    required: true
+    description: "YAML file name to process"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Install Dependencies
+      run: |
+        pip install pyyaml jsonschema jinja2
+
+    - name: Validate + Process YAML
+      run: |
+        python .github/actions/vaultops/scripts/secret_onboarding.py \
+          ${{ inputs.directory }} ${{ inputs.file }}
