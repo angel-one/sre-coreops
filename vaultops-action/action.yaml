@@ -32,6 +32,7 @@ runs:
     - name: Install Python dependencies
       run: |
         pip install pyyaml jsonschema
+      shell: bash
 
     - name: Run secret onboarding validation
       run: |
@@ -39,3 +40,4 @@ runs:
           coreops/${{ inputs.environment }} \
           ${{ inputs.metadata_file }} \
           ${{ inputs.vaultops_file }} \
+      shell: bash
