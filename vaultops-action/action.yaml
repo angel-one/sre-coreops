@@ -33,7 +33,7 @@ runs:
       shell: bash
       run: |
           echo "Action Path: ${{ github.action_path }}"
-          ls -al ${{ github.action_path }}/scripts
+          ls -al ${{ github.action_path }}
 
     - name: Run secret onboarding validation
       shell: bash
