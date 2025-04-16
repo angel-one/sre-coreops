@@ -26,7 +26,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: angel-one/sre-coreops
-          path: coreops
+          path: shared-coreops
           ref: master
 
       - name: Add Safe Directory
@@ -38,7 +38,7 @@ jobs:
 
       - name: Run secret onboarding
         run: |
-          python3 coreops/vaultops-action/scripts/secret_onboarding.py \
+          python3 shared-coreops/vaultops-action/scripts/secret_onboarding.py \
             coreops/${{ inputs.environment }} \
-            ${{ inputs.metadata_file }} \
-            ${{ inputs.vaultops_file }}
+            coreops/metadata/${{ inputs.metadata_file }} \
+            coreops/${{ inputs.environment }}/${{ inputs.vaultops_file }}
