@@ -29,14 +29,9 @@ jobs:
       - name: Install Python deps
         run: pip install pyyaml jsonschema
 
-      - name: Validate metadata schema
+      - name: Run secret onboarding
         run: |
-          python3 vaultops-action/scripts/validate_schema.py \
-            schemas/metadata.schema.json \
-            ${{ inputs.metadata_file }}
-
-      - name: Validate vaultops schema
-        run: |
-          python vaultops-action/scripts/validate_schema.py \
-            schemas/vaultops.schema.json \
-            coreops/${{ inputs.environment }}/${{ inputs.vaultops_file }}
+          python3 vaultops-action/scripts/secret_onboarding.py \
+            coreops/${{ inputs.environment }} \
+            ${{ inputs.metadata_file }} \
+            ${{ inputs.vaultops_file }}
