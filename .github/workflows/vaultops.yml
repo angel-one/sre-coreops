@@ -22,6 +22,9 @@ jobs:
     runs-on: aws-ec2
 
     steps:
+      - name: Checkout app repo
+        uses: actions/checkout@v3
+
       - name: Checkout repo
         uses: actions/checkout@v3
         with:
