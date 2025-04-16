@@ -18,15 +18,14 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
 
-    - name: Install Python dependencies
+    - name: Use system Python
       shell: bash
       run: |
-        pip install pyyaml jsonschema
+      python3 --version
+      python3 -m pip install --upgrade pip
+      python3 -m pip install pyyaml jsonschema
+
 
     - name: Checkout repository
       uses: actions/checkout@v3
