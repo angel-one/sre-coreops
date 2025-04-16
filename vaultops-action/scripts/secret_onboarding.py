@@ -4,6 +4,9 @@ import yaml
 import json
 import jsonschema
 
+SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
+SCHEMA_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "..", "schemas"))
+
 def load_yaml(path, name):
     full_path = os.path.join(path, name)
     if not os.path.isfile(full_path):
@@ -35,7 +38,7 @@ if __name__ == "__main__":
     # Validate metadata
     metadata_path = os.path.join("coreops", "metadata")
     metadata = load_yaml(metadata_path, metadata_file)
-    validate_schema(metadata, "./schemas/metadata.schema.json", "Metadata")
+    validate_schema(metadata, os.path.join(SCHEMA_DIR, "metadata.schema.json"), "Metadata")
 
     # Validate vaultops if present
     if vaultops_file:
@@ -44,7 +47,7 @@ if __name__ == "__main__":
             "app": metadata,
             **vaultops
         }
-        validate_schema(merged_vault, "./schemas/vaultops.schema.json", "VaultOps")
+        validate_schema(merged_vault, os.path.join(SCHEMA_DIR, "vaultops.schema.json"), "VaultOps")
 
     # Validate nomadops if present
     if nomadops_file:
@@ -53,4 +56,4 @@ if __name__ == "__main__":
             "app": metadata,
             **nomadops
         }
-        validate_schema(merged_nomad, "./schemas/nomadops.schema.json", "NomadOps")
+        validate_schema(merged_nomad, os.path.join(SCHEMA_DIR, "nomadops.schema.json"), "NomadOps")
