@@ -22,16 +22,20 @@ jobs:
     runs-on: aws-ec2
 
     steps:
+      - name: Checkout calling repo
+        uses: actions/checkout@v3
 
-      - name: Checkout repo
+      - name: Checkout coreops repo
         uses: actions/checkout@v3
         with:
           repository: angel-one/sre-coreops
           path: shared-coreops
           ref: master
 
-      - name: Add Safe Directory
-        run: git config --global --add safe.directory $GITHUB_WORKSPACE
+      - name: Add Git safe directories
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config --global --add safe.directory "$GITHUB_WORKSPACE/shared-coreops"
         shell: bash
 
       - name: Install Python deps
