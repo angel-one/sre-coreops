@@ -1,0 +1,42 @@
+name: "VaultOps - Secret Validation"
+description: "Validates app metadata and environment-specific VaultOps configuration"
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: "Deployment environment (e.g., dev, prod)"
+        required: true
+        type: string
+      metadata_file:
+        description: "Path to the app metadata YAML file"
+        required: true
+        type: string
+      vaultops_file:
+        description: "Path to the VaultOps YAML file"
+        required: true
+        type: string
+
+jobs:
+  vaultops:
+    runs-on: aws-ec2
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+
+      - name: Install Python deps
+        run: pip install pyyaml jsonschema
+
+      - name: Validate metadata schema
+        run: |
+          python3 vaultops-action/scripts/validate_schema.py \
+            schemas/metadata.schema.json \
+            ${{ inputs.metadata_file }}
+
+      - name: Validate vaultops schema
+        run: |
+          python vaultops-action/scripts/validate_schema.py \
+            schemas/vaultops.schema.json \
+            coreops/${{ inputs.environment }}/${{ inputs.vaultops_file }}
