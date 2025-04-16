@@ -1,55 +1,43 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "App Secret Onboarding Schema",
-    "type": "object",
-    "required": ["app", "vault"],
-    "properties": {
-      "app": {
-        "type": "object",
-        "required": ["name", "uuid", "environment", "owner"],
-        "properties": {
-          "name": { "type": "string" },
-          "uuid": { "type": "string", "format": "uuid" },
-          "environment": { "type": "string" },
-          "team": { "type": "string" },
-          "owner": { "type": "string", "format": "email" }
-        }
-      },
-      "vault": {
-        "type": "object",
-        "required": ["approle", "policies"],
-        "properties": {
-          "approle": {
-            "type": "object",
-            "required": ["token_ttl", "token_max_ttl", "bind_secret_id"],
-            "properties": {
-              "token_ttl": { "type": "string" },
-              "token_max_ttl": { "type": "string" },
-              "secret_id_num_uses": { "type": "integer" },
-              "bind_secret_id": { "type": "boolean" }
-            }
-          },
-          "policies": {
-            "type": "array",
-            "items": { "type": "string" }
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "VaultOps Secret Configuration",
+  "type": "object",
+  "required": ["vault"],
+  "properties": {
+    "vault": {
+      "type": "object",
+      "required": ["approle", "policies"],
+      "properties": {
+        "approle": {
+          "type": "object",
+          "required": ["token_ttl", "token_max_ttl", "bind_secret_id"],
+          "properties": {
+            "token_ttl": { "type": "string" },
+            "token_max_ttl": { "type": "string" },
+            "secret_id_num_uses": { "type": "integer" },
+            "bind_secret_id": { "type": "boolean" }
           }
+        },
+        "policies": {
+          "type": "array",
+          "items": { "type": "string" }
         }
-      },
-      "aws": {
-        "type": "object",
-        "properties": {
-          "access": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "required": ["account_id", "allowed_roles", "region"],
-              "properties": {
-                "account_id": { "type": "string" },
-                "region": { "type": "string" },
-                "allowed_roles": {
-                  "type": "array",
-                  "items": { "type": "string" }
-                }
+      }
+    },
+    "aws": {
+      "type": "object",
+      "properties": {
+        "access": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["account_id", "allowed_roles", "region"],
+            "properties": {
+              "account_id": { "type": "string" },
+              "region": { "type": "string" },
+              "allowed_roles": {
+                "type": "array",
+                "items": { "type": "string" }
               }
             }
           }
@@ -57,4 +45,4 @@
       }
     }
   }
-  
+}
