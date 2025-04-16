@@ -18,13 +18,12 @@ inputs:
 runs:
   using: "composite"
   steps:
-
     - name: Use system Python
       shell: bash
       run: |
-      python3 --version
-      python3 -m pip install --upgrade pip
-      python3 -m pip install pyyaml jsonschema
+        python3 --version
+        python3 -m pip install --upgrade pip
+        python3 -m pip install pyyaml jsonschema
 
 
     - name: Checkout repository
