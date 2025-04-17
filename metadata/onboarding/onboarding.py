@@ -11,8 +11,8 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 # Import shared logger and the validation schema plan
-from coreops.logging_utils import setup_logger
-from coreops.validation_config import SCHEMA_PLAN
+from utils.logging_utils import setup_logger
+from utils.validation_config import SCHEMA_PLAN
 
 # Initialize a logger for this script with a clear namespace
 logger = setup_logger("coreops.onboarding")
