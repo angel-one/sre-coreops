@@ -43,7 +43,7 @@ jobs:
 
       - name: Run secret onboarding
         run: |
-          python3 shared-coreops/vaultops-action/scripts/secret_onboarding.py \
-            coreops/${{ inputs.environment }} \
-            ${{ inputs.metadata_file }} \
-            ${{ inputs.vaultops_file }}
+          python3 shared-coreops/metadata/onboarding/onboarding.py \
+            --env-dir coreops/${{ inputs.environment }} \
+            --metadata-file ${{ inputs.metadata_file }} \
+            --vaultops-file ${{ inputs.vaultops_file }} 
