@@ -1,0 +1,19 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {% for bucket in buckets %}
+    {
+      "Sid": "S3ReadOnlyAccess{{ loop.index }}",
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:ListBucket"
+      ],
+      "Resource": [
+        "arn:aws:s3:::{{ bucket }}",
+        "arn:aws:s3:::{{ bucket }}/*"
+      ]
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+  ]
+}

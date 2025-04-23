@@ -5,18 +5,18 @@ import yaml
 import threading
 from typing import List, Dict
 
-from utils.logging_utils import get_logger
+from utils.logging_utils import setup_logger
 
 # Initialize logger
-logger = get_logger("vault-bootstrap")
+logger = setup_logger("vault-bootstrap")
 
 # Load Vault token from env
 VAULT_TOKEN = os.getenv("VAULT_TOKEN")
 
 
 def flat_uuid(uuid: str) -> str:
-    """Removes hyphens from a UUID."""
-    return uuid.replace("-", "")
+    """Removes hyphens and converts UUID to lowercase."""
+    return uuid.replace("-", "").lower()
 
 
 def read_yaml(path: str) -> Dict:
@@ -51,7 +51,8 @@ def vault_api_request(method: str, path: str, json: Dict = None, base_url: str =
         response.raise_for_status()
         return response
     except requests.exceptions.RequestException as e:
-        logger.error(f"Vault API request failed at {url}: {e}")
+        error_detail = e.response.text if e.response else str(e)
+        logger.error(f"Vault API request failed at {url}: {error_detail}")
         raise
 
 
@@ -75,17 +76,81 @@ def create_approle(role_name: str, policy_name: str, base_url: str):
         raise
 
 
-def create_aws_role(flat_uuid: str, role_arns: List[str], base_url: str):
-    payload = {"credential_type": "assumed_role", "role_arns": role_arns}
-    try:
-        vault_api_request("POST", f"aws/sts/{flat_uuid}", payload, base_url)
-        logger.info(f"AWS STS role '{flat_uuid}' created at {base_url}")
-    except Exception as e:
-        logger.error(f"Failed to create AWS STS role '{flat_uuid}' at {base_url}: {e}")
-        raise
+import json
+
+from jinja2 import Environment, FileSystemLoader
+
+def create_aws_role(flat_uuid: str, role_arns: List[str], base_url: str, vault_cfg: Dict):
+    external_id = "vault-gpx"
+    session_tags = [f"AppUUID={flat_uuid}"]
+    iam_policy_dir = os.path.join(os.path.dirname(__file__), "config", "aws", "IAM", "policies")
+    aws_cfg = vault_cfg.get("aws", {})
+    accounts = aws_cfg.get("accounts", [])
+
+    jinja_env = Environment(loader=FileSystemLoader(iam_policy_dir))
+    combined_policy = {"Version": "2012-10-17", "Statement": []}
+
+    bucket_groups = {}
+    for account in accounts:
+        services = account.get("services", {})
+        if "s3" in services:
+            for bucket in services["s3"].get("buckets", []):
+                access = bucket.get("access", "readonly")
+                logger.info(f"[DEBUG] Detected bucket '{bucket['name']}' with access '{access}'")
+                bucket_groups.setdefault(access, []).append(bucket["name"])
+
+    logger.info(f"[DEBUG] Consolidated bucket groups: {bucket_groups}")
+
+    for access in sorted(bucket_groups.keys()):
+        bucket_names = sorted(set(bucket_groups[access]))
+        template_path = os.path.join("s3", f"{access}.j2")
+        template_file = os.path.join(iam_policy_dir, template_path)
+
+        if not os.path.exists(template_file):
+            logger.warning(f"[SKIP] Template not found: {template_path}")
+            continue
+
+        logger.info(f"[FOUND] Template located: {template_path}")
+
+        if not bucket_names:
+            logger.warning(f"[SKIP] No buckets found for access level '{access}', skipping rendering.")
+            continue
+
+        logger.info(f"[DEBUG] Rendering policy for access '{access}' with buckets: {bucket_names}")
+        template = jinja_env.get_template(template_path)
+        rendered_policy = template.render(buckets=bucket_names)
+        debug_path = f"/tmp/s3-policy-{access}.json"
+        with open(debug_path, "w", encoding="utf-8") as f:
+            f.write(rendered_policy)
+        logger.info(f"[DEBUG] Rendered policy written to {debug_path}")
+        policy_data = json.loads(rendered_policy)
+        logger.info(f"[DEBUG] Statements added from access '{access}': {json.dumps(policy_data.get('Statement', []), indent=2)}")
+        combined_policy["Statement"].extend(policy_data.get("Statement", []))
+
+    for account in accounts:
+        acct_id = account.get("account_id")
+        if acct_id:
+            role_name = f"{flat_uuid}-{acct_id}"
+            payload = {
+                "credential_type": "assumed_role",
+                "role_arns": [f"arn:aws:iam::{acct_id}:role/{load_assume_role_name()}"],
+                "external_id": external_id,
+                "session_tags": session_tags,
+                "policy_document": json.dumps(combined_policy, indent=2)
+            }
+            logger.info(f"[DEBUG] Creating AWS IAM role '{role_name}' at {base_url}")
+            logger.info(f"[DEBUG] Payload: {payload}")
+            try:
+                vault_api_request("POST", f"aws/roles/{role_name}", payload, base_url)
+                logger.info(f"AWS IAM role '{role_name}' created at {base_url}")
+            except Exception as e:
+                logger.error(f"Failed to create AWS IAM role '{role_name}' at {base_url}: {e}")
+                raise
+        
+        
 
 
-def build_policy(uuid_flat: str, enable_kv: bool, enable_aws: bool) -> str:
+def build_policy(uuid_flat: str, enable_kv: bool, enable_aws: bool, vault_cfg: Dict) -> str:
     policy = []
     if enable_kv:
         policy.extend([
@@ -94,20 +159,25 @@ def build_policy(uuid_flat: str, enable_kv: bool, enable_aws: bool) -> str:
             f'path "kv/metadata/{uuid_flat}/*" {{ capabilities = ["read"] }}'
         ])
     if enable_aws:
-        policy.append(f'path "aws/sts/{uuid_flat}" {{ capabilities = ["read"] }}')
-    return "\n".join(policy)
+        accounts = vault_cfg.get("aws", {}).get("accounts", [])
+        for acct in accounts:
+            acct_id = acct.get("account_id")
+            if acct_id:
+                policy.append(f'path "aws/sts/{uuid_flat}-{acct_id}" {{ capabilities = ["read"] }}')
+
+    return "".join(policy)
 
 
 def bootstrap_single_vault(vault_url: str, metadata: Dict, vault_cfg: Dict) -> bool:
     try:
-        uuid = metadata["app_id"]
+        uuid = metadata["appid"]
         uuid_flat = flat_uuid(uuid)
         policy_name = f"{uuid_flat}-policy"
 
         enable_kv = vault_cfg.get("kv", {}).get("enabled", False)
         enable_aws = vault_cfg.get("aws", {}).get("enabled", False)
 
-        policy = build_policy(uuid_flat, enable_kv, enable_aws)
+        policy = build_policy(uuid_flat, enable_kv, enable_aws, vault_cfg)
         create_policy(policy_name, policy, vault_url)
         create_approle(uuid_flat, policy_name, vault_url)
 
@@ -118,7 +188,7 @@ def bootstrap_single_vault(vault_url: str, metadata: Dict, vault_cfg: Dict) -> b
                 f"arn:aws:iam::{acct['account_id']}:role/{assume_role_name}"
                 for acct in accounts
             ]
-            create_aws_role(uuid_flat, role_arns, vault_url)
+            create_aws_role(uuid_flat, role_arns, vault_url, vault_cfg)
 
         logger.info(f"Vault bootstrap completed successfully for {vault_url}")
         return True
@@ -151,6 +221,18 @@ def bootstrap_to_all_vaults(metadata_path: str, vault_path: str):
     return all(results.values())
 
 
-# Example usage:
-# success = bootstrap_to_all_vaults("tars/metadata.yaml", "tars/dev/vault.yaml")
-# sys.exit(0 if success else 1)
+if __name__ == "__main__":
+    if len(sys.argv) != 3:
+        logger.error("Usage: python app_vault_bootstrap.py <metadata.yaml> <vault.yaml>")
+        sys.exit(1)
+
+    metadata_path = sys.argv[1]
+    vault_config_path = sys.argv[2]
+
+    logger.info(f"Starting Vault bootstrap for metadata: {metadata_path} and config: {vault_config_path}")
+    success = bootstrap_to_all_vaults(metadata_path, vault_config_path)
+    if success:
+        logger.info("✅ Bootstrap completed successfully across all Vaults.")
+    else:
+        logger.error("❌ Bootstrap failed on one or more Vaults.")
+    sys.exit(0 if success else 1)

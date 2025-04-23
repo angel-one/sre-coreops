@@ -1,6 +1,5 @@
 vault_endpoints:
-  gpx: http://vault.gpx.local:8200
-  ntt: http://vault.ntt.local:8200
+  gpx: http://vault.mivarun.ninja:8200
 
 approle_defaults:
   token_ttl: "1h"
