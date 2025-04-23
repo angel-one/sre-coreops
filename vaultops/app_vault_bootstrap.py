@@ -26,6 +26,13 @@ def read_yaml(path: str) -> Dict:
         return yaml.safe_load(f)
 
 
+def load_global_defaults() -> Dict:
+    """Loads global AppRole defaults from vaultops/config/defaults.yaml."""
+    path = os.path.join(os.path.dirname(__file__), "config", "defaults.yaml")
+    with open(path, encoding="utf-8") as f:
+        return yaml.safe_load(f).get("approle_defaults", {})
+
+
 def vault_api_request(method: str, path: str, json: Dict = None):
     """Generic helper to make Vault API calls."""
     url = f"{VAULT_ADDR}/v1/{path}"
@@ -48,16 +55,10 @@ def create_policy(name: str, policy_hcl: str):
         raise
 
 
-def create_approle(role_name: str, policy_name: str, config: Dict):
-    """Creates an AppRole with configuration loaded from vault.yaml."""
-    payload = {
-        "token_policies": policy_name,
-        "bind_secret_id": config.get("bind_secret_id", True),
-        "secret_id_ttl": config.get("secret_id_ttl", "24h"),
-        "secret_id_num_uses": config.get("secret_id_num_uses", 10),
-        "token_ttl": config.get("token_ttl", "1h"),
-        "token_max_ttl": config.get("token_max_ttl", "4h"),
-    }
+def create_approle(role_name: str, policy_name: str):
+    """Creates an AppRole using enforced defaults from config file."""
+    defaults = load_global_defaults()
+    payload = {"token_policies": policy_name, **defaults}
     try:
         vault_api_request("POST", f"auth/approle/role/{role_name}", payload)
         logger.info(f"AppRole '{role_name}' successfully created")
@@ -118,7 +119,7 @@ def bootstrap(metadata_path: str, vault_path: str):
 
         policy = build_policy(uuid_flat, enable_kv, enable_aws)
         create_policy(policy_name, policy)
-        create_approle(uuid_flat, policy_name, vault_cfg.get("approle", {}))
+        create_approle(uuid_flat, policy_name)
 
         if enable_aws:
             accounts = vault_cfg.get("aws", {}).get("accounts", [])
