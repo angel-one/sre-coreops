@@ -232,7 +232,7 @@ if __name__ == "__main__":
     logger.info(f"Starting Vault bootstrap for metadata: {metadata_path} and config: {vault_config_path}")
     success = bootstrap_to_all_vaults(metadata_path, vault_config_path)
     if success:
-        logger.info("✅ Bootstrap completed successfully across all Vaults.")
+        logger.info("Bootstrap completed successfully across all Vaults.")
     else:
-        logger.error("❌ Bootstrap failed on one or more Vaults.")
+        logger.error("Bootstrap failed on one or more Vaults.")
     sys.exit(0 if success else 1)
