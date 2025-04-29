@@ -10,13 +10,9 @@ from pathlib import Path
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-
-# Debugging: Print sys.path to verify
-print("Python Path:", sys.path)
-
-
-
 from utils.logging_utils import setup_logger
+from utils.validation_config import SCHEMA_PLAN
+
 
 # Initialize logger
 logger = setup_logger("vault-bootstrap")
