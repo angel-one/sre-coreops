@@ -1,48 +1,78 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "VaultOps Secret Configuration",
+  "title": "Vault Bootstrap Configuration",
   "type": "object",
-  "required": ["vault"],
   "properties": {
     "vault": {
       "type": "object",
-      "required": ["approle", "policies"],
       "properties": {
-        "approle": {
+        "kv": {
           "type": "object",
-          "required": ["token_ttl", "token_max_ttl", "bind_secret_id"],
           "properties": {
-            "token_ttl": { "type": "string" },
-            "token_max_ttl": { "type": "string" },
-            "secret_id_num_uses": { "type": "integer" },
-            "bind_secret_id": { "type": "boolean" }
-          }
-        },
-        "policies": {
-          "type": "array",
-          "items": { "type": "string" }
-        }
-      }
-    },
-    "aws": {
-      "type": "object",
-      "properties": {
-        "access": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "required": ["account_id", "allowed_roles", "region"],
-            "properties": {
-              "account_id": { "type": "string" },
-              "region": { "type": "string" },
-              "allowed_roles": {
-                "type": "array",
-                "items": { "type": "string" }
+            "enabled": { "type": "boolean" },
+            "secrets": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["path", "description"],
+                "properties": {
+                  "path": { "type": "string" },
+                  "description": { "type": "string" },
+                  "keys": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  }
+                }
               }
             }
-          }
+          },
+          "required": ["enabled"]
+        },
+        "aws": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "accounts": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["account_id", "services"],
+                "properties": {
+                  "account_id": { "type": "string" },
+                  "services": {
+                    "type": "object",
+                    "properties": {
+                      "s3": {
+                        "type": "object",
+                        "properties": {
+                          "buckets": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "required": ["name", "access"],
+                              "properties": {
+                                "name": { "type": "string" },
+                                "access": {
+                                  "type": "string",
+                                  "enum": ["readwrite", "admin", "read"]
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "required": ["buckets"]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "required": ["enabled", "accounts"]
         }
-      }
+      },
+      "required": ["kv", "aws"]
     }
-  }
+  },
+  "required": ["vault"]
 }
