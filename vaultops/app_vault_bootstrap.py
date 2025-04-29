@@ -5,6 +5,8 @@ import yaml
 import threading
 from typing import List, Dict
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+
 from utils.logging_utils import setup_logger
 
 # Initialize logger
