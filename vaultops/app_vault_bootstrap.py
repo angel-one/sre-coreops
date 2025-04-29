@@ -3,6 +3,8 @@ import sys
 import requests
 import yaml
 import threading
+import argparse
+
 from typing import List, Dict
 from pathlib import Path
 
@@ -230,18 +232,56 @@ def bootstrap_to_all_vaults(metadata_path: str, vault_path: str):
     return all(results.values())
 
 
+def parse_args() -> argparse.Namespace:
+    """
+    Constructs an argparse parser based on declared schemas in SCHEMA_PLAN.
+
+    Returns:
+        argparse.Namespace containing parsed arguments.
+    """
+    parser = argparse.ArgumentParser(description="Bootstrap Vault configuration.")
+
+    # Required args
+    parser.add_argument(
+        "--env-dir",
+        required=True,
+        help="Path to the environment-specific folder (e.g., coreops/dev)"
+    )
+    parser.add_argument(
+        "--metadata-file",
+        required=True,
+        help="YAML file under coreops/metadata/ containing app-level metadata"
+    )
+
+    # Optional config files derived from SCHEMA_PLAN
+    # Assuming SCHEMA_PLAN is available in this script
+    for key, config in SCHEMA_PLAN.items():
+        parser.add_argument(
+            f"--{key}-file",
+            default="",
+            help=f"{config['label']} YAML file under environment directory (e.g., vaultops.yaml)"
+        )
+
+    return parser.parse_args()
+
+
+
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        logger.error("Usage: python app_vault_bootstrap.py <metadata.yaml> <vault.yaml>")
+    try:
+        args = parse_args()
+        # Now you can use args.env_dir, args.metadata_file, etc.
+
+        # Example usage of the parsed arguments
+        logger.info(f"Starting Vault bootstrap for metadata: {args.metadata_file} and config: {args.env_dir}")
+        success = bootstrap_to_all_vaults(args.metadata_file, args.env_dir)
+
+        if success:
+            logger.info("Bootstrap completed successfully across all Vaults.")
+            sys.exit(0)
+        else:
+            logger.error("Bootstrap failed on one or more Vaults.")
+            sys.exit(1)
+
+    except Exception as e:
+        logger.error(f"An error occurred: {e}")
         sys.exit(1)
-
-    metadata_path = sys.argv[1]
-    vault_config_path = sys.argv[2]
-
-    logger.info(f"Starting Vault bootstrap for metadata: {metadata_path} and config: {vault_config_path}")
-    success = bootstrap_to_all_vaults(metadata_path, vault_config_path)
-    if success:
-        logger.info("Bootstrap completed successfully across all Vaults.")
-    else:
-        logger.error("Bootstrap failed on one or more Vaults.")
-    sys.exit(0 if success else 1)
