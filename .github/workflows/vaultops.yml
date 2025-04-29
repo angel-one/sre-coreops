@@ -47,3 +47,4 @@ jobs:
             --env-dir coreops/${{ inputs.environment }} \
             --metadata-file ${{ inputs.metadata_file }} \
             --vaultops-file vault/${{ inputs.vaultops_file }} 
+            
