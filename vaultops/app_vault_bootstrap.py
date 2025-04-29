@@ -6,7 +6,7 @@ import threading
 from typing import List, Dict
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 
 # Debugging: Print sys.path to verify
