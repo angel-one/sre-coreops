@@ -46,4 +46,4 @@ jobs:
           python3 shared-coreops/vaultops/app_vault_bootstrap.py \
             --env-dir coreops/${{ inputs.environment }} \
             --metadata-file ${{ inputs.metadata_file }} \
-            --vaultops-file ${{ inputs.vaultops_file }} 
+            --vaultops-file vault/${{ inputs.vaultops_file }} 
