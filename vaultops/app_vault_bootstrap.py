@@ -278,8 +278,8 @@ if __name__ == "__main__":
         # Validate metadata and vaultops schema before proceeding
         metadata_path = args.metadata_file  # e.g., coreops/metadata/tars.yaml
         vaultops_path = os.path.join(args.env_dir, "vault", args.vaultops_file)
-        validate_yaml(args.metadata_file, "metadata")
-        validate_yaml(vaultops_file_path, "vaultops")
+        validate_yaml(metadata_path, "metadata")
+        validate_yaml(vaultops_path, "vaultops")
         logger.info(f"Starting Vault bootstrap for metadata: {metadata_path} and config: {vaultops_path}")
         success = bootstrap_to_all_vaults(args.metadata_file, args.env_dir)
 
