@@ -207,9 +207,9 @@ def bootstrap_single_vault(vault_url: str, metadata: Dict, vault_cfg: Dict) -> b
         return False
 
 
-def bootstrap_to_all_vaults(metadata_path: str, vault_path: str):
+def bootstrap_to_all_vaults(metadata_path: str, app_vault_config_path: str):
     metadata = read_yaml(metadata_path)
-    vault_cfg = read_yaml(vault_path).get("vault", {})
+    vault_cfg = read_yaml(app_vault_config_path).get("vault", {})
     vault_endpoints = load_vault_endpoints()
 
     results = {}
