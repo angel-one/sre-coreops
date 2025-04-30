@@ -280,7 +280,7 @@ if __name__ == "__main__":
         vaultops_path = os.path.join(args.env_dir, "vault", args.vaultops_file)
         validate_yaml(args.metadata_file, "metadata")
         validate_yaml(vaultops_file_path, "vaultops")
-        logger.info(f"Starting Vault bootstrap for metadata: {args.metadata_file} and config: {args.env_dir}")
+        logger.info(f"Starting Vault bootstrap for metadata: {metadata_path} and config: {vaultops_path}")
         success = bootstrap_to_all_vaults(args.metadata_file, args.env_dir)
 
         if success:
