@@ -41,7 +41,7 @@ jobs:
       - name: Install Python deps
         run: pip install pyyaml jsonschema
 
-        - name: Run secret onboarding
+      - name: Run secret onboarding
         run: |
           python3 shared-coreops/vaultops/app_vault_bootstrap.py \
             --env-dir coreops/${{ inputs.environment }} \
