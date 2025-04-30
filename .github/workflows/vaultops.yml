@@ -43,8 +43,11 @@ jobs:
 
       - name: Run secret onboarding
         run: |
+          echo "ENV: ${{ inputs.environment }}"
+          echo "METADATA: coreops/metadata/${{ inputs.metadata_file }}"
+          echo "VAULTOps: coreops/${{ inputs.environment }}/vault/${{ inputs.vaultops_file }}"
+          
           python3 shared-coreops/vaultops/app_vault_bootstrap.py \
             --env-dir coreops/${{ inputs.environment }} \
             --metadata-file coreops/metadata/${{ inputs.metadata_file }} \
             --vaultops-file ${{ inputs.vaultops_file }}
-            
