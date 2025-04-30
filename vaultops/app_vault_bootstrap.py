@@ -10,7 +10,7 @@ from pathlib import Path
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from utils.logging_utils import setup_logger
+from utils.logger_utils import setup_logger
 from utils.validation_config import SCHEMA_PLAN
 
 
@@ -263,11 +263,11 @@ def parse_args() -> argparse.Namespace:
 
 def list_files_recursively(directory):
     for root, dirs, files in os.walk(directory):
-        logging.info(f"Directory: {root}")
+        logger.info(f"Directory: {root}")
         for name in files:
             file_path = os.path.join(root, name)
             file_info = os.stat(file_path)
-            logging.info(f"File: {file_path}, Size: {file_info.st_size} bytes, Modified: {file_info.st_mtime}")
+            logger.info(f"File: {file_path}, Size: {file_info.st_size} bytes, Modified: {file_info.st_mtime}")
 
 
 if __name__ == "__main__":           
