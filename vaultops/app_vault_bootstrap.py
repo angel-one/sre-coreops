@@ -209,7 +209,12 @@ def bootstrap_single_vault(vault_url: str, metadata: Dict, vault_cfg: Dict) -> b
 
 def bootstrap_to_all_vaults(metadata_path: str, app_vault_config_path: str):
     logger.info(f"[DEBUG] app_vault_config_path resolved to: {app_vault_config_path}")
-
+    token = os.getenv("VAULT_TOKEN", "")
+    if not token:
+        logger.error("[ERROR] VAULT_TOKEN is not set in the environment.")
+        raise ValueError("VAULT_TOKEN is not set in the environment.")
+    else:
+        logger.info(f"[DEBUG] VAULT_TOKEN detected, starts with: {token[:6]}****** (redacted)")
     metadata = read_yaml(metadata_path)
     vault_cfg = read_yaml(app_vault_config_path).get("vault", {})
     vault_endpoints = load_vault_endpoints()
