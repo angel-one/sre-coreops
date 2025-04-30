@@ -11,6 +11,8 @@ from pathlib import Path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from utils.logging_utils import setup_logger
+from utils.schema_validator import validate_yaml
+
 from utils.validation_config import SCHEMA_PLAN
 
 
@@ -257,14 +259,6 @@ def parse_args() -> argparse.Namespace:
         help="Path to the VaultOps configuration file under the environment directory (e.g., coreops/dev/vault/)"
     )
 
-    # Optional config files derived from SCHEMA_PLAN
-    for key, config in SCHEMA_PLAN.items():
-        parser.add_argument(
-            f"--{key}-file",
-            default="",
-            help=f"{config['label']} YAML file under environment directory (e.g., vaultops.yaml)"
-        )
-
     return parser.parse_args()
 
 
@@ -281,7 +275,9 @@ if __name__ == "__main__":
     try:
         args = parse_args()
         # Now you can use args.env_dir, args.metadata_file, etc.
-
+        # Validate metadata and vaultops schema before proceeding
+        validate_yaml(args.metadata_file, "metadata")
+        validate_yaml(vaultops_file_path, "vaultops")
         # Example usage of the parsed arguments
         #print("Metadata File Path:", args.metadata_file)
         #print("VaultOps File Path:", args.vaultops_file)
