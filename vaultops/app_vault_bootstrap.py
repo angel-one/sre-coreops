@@ -261,13 +261,13 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def list_files_recursively(directory):
-    for root, dirs, files in os.walk(directory):
-        logger.info(f"Directory: {root}")
-        for name in files:
-            file_path = os.path.join(root, name)
-            file_info = os.stat(file_path)
-            logger.info(f"File: {file_path}, Size: {file_info.st_size} bytes, Modified: {file_info.st_mtime}")
+#def list_files_recursively(directory):
+#    for root, dirs, files in os.walk(directory):
+#        logger.info(f"Directory: {root}")
+#        for name in files:
+#            file_path = os.path.join(root, name)
+#            file_info = os.stat(file_path)
+#            logger.info(f"File: {file_path}, Size: {file_info.st_size} bytes, Modified: {file_info.st_mtime}")
 
 
 if __name__ == "__main__":           
@@ -276,10 +276,10 @@ if __name__ == "__main__":
         # Now you can use args.env_dir, args.metadata_file, etc.
 
         # Example usage of the parsed arguments
-        print("Metadata File Path:", args.metadata_file)
-        print("VaultOps File Path:", args.vaultops_file)
-        print("Current Working Directory:", os.getcwd())
-        list_files_recursively(os.getcwd())
+        #print("Metadata File Path:", args.metadata_file)
+        #print("VaultOps File Path:", args.vaultops_file)
+        #print("Current Working Directory:", os.getcwd())
+        #list_files_recursively(os.getcwd())
         logger.info(f"Starting Vault bootstrap for metadata: {args.metadata_file} and config: {args.env_dir}")
         success = bootstrap_to_all_vaults(args.metadata_file, args.env_dir)
 
