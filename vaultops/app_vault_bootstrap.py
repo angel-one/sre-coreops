@@ -10,7 +10,7 @@ from pathlib import Path
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from utils.logger_utils import setup_logger
+from utils.logging_utils import setup_logger
 from utils.validation_config import SCHEMA_PLAN
 
 
