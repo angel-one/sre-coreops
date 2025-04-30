@@ -237,6 +237,7 @@ def parse_args() -> argparse.Namespace:
     """
     parser = argparse.ArgumentParser(description="Bootstrap Vault configuration.")
     print("Current Working Directory:", os.getcwd())
+    
     # Required args
     parser.add_argument(
         "--env-dir",
@@ -249,8 +250,14 @@ def parse_args() -> argparse.Namespace:
         help="YAML file under coreops/metadata/ containing app-level metadata"
     )
 
+    # New argument for VaultOps file
+    parser.add_argument(
+        "--vaultops-file",
+        required=True,
+        help="Path to the VaultOps configuration file under the environment directory (e.g., coreops/dev/vault/)"
+    )
+
     # Optional config files derived from SCHEMA_PLAN
-    # Assuming SCHEMA_PLAN is available in this script
     for key, config in SCHEMA_PLAN.items():
         parser.add_argument(
             f"--{key}-file",
