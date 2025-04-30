@@ -283,7 +283,7 @@ if __name__ == "__main__":
         validate_yaml(metadata_path, "metadata")
         validate_yaml(vaultops_path, "vaultops")
         logger.info(f"Starting Vault bootstrap for metadata: {metadata_path} and config: {vaultops_path}")
-        success = bootstrap_to_all_vaults(args.metadata_file, args.env_dir)
+        success = bootstrap_to_all_vaults(args.metadata_file, vaultops_path)
 
         if success:
             logger.info("Bootstrap completed successfully across all Vaults.")
