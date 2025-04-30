@@ -15,10 +15,16 @@ def load_yaml(file_path: str) -> Dict:
         return yaml.safe_load(f)
 
 def load_schema(schema_name: str) -> Dict:
-    schema_path = os.path.join(SCHEMA_DIR, f"{schema_name}.schema.yaml")
-    if not os.path.exists(schema_path):
-        raise FileNotFoundError(f"Schema file not found: {schema_path}")
-    return load_yaml(schema_path)
+    for ext in ("json", "yaml", "yml"):
+        schema_path = os.path.join(SCHEMA_DIR, f"{schema_name}.schema.{ext}")
+        if os.path.exists(schema_path):
+            with open(schema_path, encoding="utf-8") as f:
+                if ext == "json":
+                    return json.load(f)
+                else:
+                    return yaml.safe_load(f)
+    raise FileNotFoundError(f"No schema found for '{schema_name}' with .json/.yaml/.yml extension in {SCHEMA_DIR}")
+
 
 def validate_yaml(file_path: str, schema_name: str) -> bool:
     logger.info(f"Validating {file_path} against schema '{schema_name}'")
