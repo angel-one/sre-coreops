@@ -276,15 +276,10 @@ if __name__ == "__main__":
         args = parse_args()
         # Now you can use args.env_dir, args.metadata_file, etc.
         # Validate metadata and vaultops schema before proceeding
+        metadata_path = args.metadata_file  # e.g., coreops/metadata/tars.yaml
+        vaultops_path = os.path.join(args.env_dir, "vault", args.vaultops_file)
         validate_yaml(args.metadata_file, "metadata")
         validate_yaml(vaultops_file_path, "vaultops")
-        # Example usage of the parsed arguments
-        #print("Metadata File Path:", args.metadata_file)
-        #print("VaultOps File Path:", args.vaultops_file)
-        #print("Current Working Directory:", os.getcwd())
-        #list_files_recursively(os.getcwd())
-        vaultops_file_path = os.path.join(args.env_dir, "vault", args.vaultops_file)
-        print("VaultOps File Path:", vaultops_file_path)
         logger.info(f"Starting Vault bootstrap for metadata: {args.metadata_file} and config: {args.env_dir}")
         success = bootstrap_to_all_vaults(args.metadata_file, args.env_dir)
 
